@@ -27,4 +27,16 @@ jobs:
                 docker build -t thingsanalytic/example-nodejs-express:${CIRCLE_SHA1} .
                 docker push thingsanalytic/example-nodejs-express:latest
                 docker push thingsanalytic/example-nodejs-express:${CIRCLE_SHA1}
+      - run:
+            name: "call rancher to deploy"
+            command: |
+                docker run --rm -it \
+                    -e CATTLE_ACCESS_KEY="$CATTLE_ACCESS_KEY" \
+                    -e CATTLE_SECRET_KEY="$CATTLE_SECRET_KEY" \
+                    -e CATTLE_URL="$CATTLE_URL" \
+                    etlweather/gaucho upgrade $RANCHER_EXAMPLE_NODEJS \
+                    --imageUuid 'docker:thingsanalytic/example-nodejs-express:latest' \
+                    --batch_size 3 --start_first \
+                    --auto_complete --timeout 600 \
+                    /
       - run: echo Done
